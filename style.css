@@ -367,6 +367,66 @@ button:hover {
   color: #7b1f32;
 }
 
+.grade-scale {
+  margin-top: 24px;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, #eef6fb, #f8fcff);
+  box-shadow: var(--shadow);
+}
+
+.grade-scale__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.grade-scale__head h2 {
+  margin: 0;
+  font-size: 18px;
+  letter-spacing: 0.02em;
+}
+
+.grade-scale__caption {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.grade-scale__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 12px;
+}
+
+.grade-scale__row {
+  display: grid;
+  grid-template-columns: 70px 1fr auto;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: #ffffff;
+  border: 1px solid var(--border);
+  font-weight: 600;
+}
+
+.grade-scale__label {
+  letter-spacing: 0.02em;
+}
+
+.grade-scale__percent {
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.grade-scale__gpa {
+  color: var(--accent);
+}
+
 @media (max-width: 960px) {
   .layout {
     grid-template-columns: 1fr;

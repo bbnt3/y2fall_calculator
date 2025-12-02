@@ -16,11 +16,85 @@
           Enter your scores by assignment, calculate weighted grades, and see the average needed on what is left.
         </p>
         <div class="tags">
-          <span class="pill">Enter in fraction (ex. 18/20) or number (ex. 90)</span>
+          <span class="pill">Enter in fractions (ex. 18/20) or numbers (ex. 90)</span>
           <span class="pill">Leave blank if missing/unknown</span>
         </div>
       </div>
     </header>
+
+    <section class="grade-scale" aria-labelledby="grade-scale-title">
+      <div class="grade-scale__head">
+        <h2 id="grade-scale-title">Grade to GPA Reference</h2>
+        <p class="grade-scale__caption">Conversion scale based on UofT undergraduate grade scale.</p>
+      </div>
+      <div class="grade-scale__grid">
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">A+</span>
+          <span class="grade-scale__percent">90-100%</span>
+          <span class="grade-scale__gpa">4.0</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">A</span>
+          <span class="grade-scale__percent">85-89%</span>
+          <span class="grade-scale__gpa">4.0</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">A-</span>
+          <span class="grade-scale__percent">80-84%</span>
+          <span class="grade-scale__gpa">3.7</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">B+</span>
+          <span class="grade-scale__percent">77-79%</span>
+          <span class="grade-scale__gpa">3.3</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">B</span>
+          <span class="grade-scale__percent">73-76%</span>
+          <span class="grade-scale__gpa">3.0</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">B-</span>
+          <span class="grade-scale__percent">70-72%</span>
+          <span class="grade-scale__gpa">2.7</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">C+</span>
+          <span class="grade-scale__percent">67-69%</span>
+          <span class="grade-scale__gpa">2.3</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">C</span>
+          <span class="grade-scale__percent">63-66%</span>
+          <span class="grade-scale__gpa">2.0</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">C-</span>
+          <span class="grade-scale__percent">60-62%</span>
+          <span class="grade-scale__gpa">1.7</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">D+</span>
+          <span class="grade-scale__percent">57-59%</span>
+          <span class="grade-scale__gpa">1.3</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">D</span>
+          <span class="grade-scale__percent">53-56%</span>
+          <span class="grade-scale__gpa">1.0</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">D-</span>
+          <span class="grade-scale__percent">50-52%</span>
+          <span class="grade-scale__gpa">0.7</span>
+        </div>
+        <div class="grade-scale__row">
+          <span class="grade-scale__label">F</span>
+          <span class="grade-scale__percent">0-49%</span>
+          <span class="grade-scale__gpa">0.0</span>
+        </div>
+      </div>
+    </section>
 
     <main class="layout">
       <section class="panel controls">
@@ -34,7 +108,7 @@
         <p class="hint">Choose which courses to include; assignments will appear on the right.</p>
         <div id="course-list" class="stack"></div>
         <div class="callout">
-          <strong>Input tips:</strong> use fractions or numbers (don't need to type %). Leave empty or type <code>none</code> for missing grades.
+          <strong>Input tips:</strong> use fractions or numbers (don't need to type %). Leave empty or type none for missing grades.
         </div>
       </section>
 
