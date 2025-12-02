@@ -129,6 +129,7 @@ body {
   border-radius: 10px;
   background: #f9fbff;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  cursor: pointer;
 }
 
 .course-option:hover {
@@ -136,13 +137,10 @@ body {
   box-shadow: 0 8px 18px rgba(15, 31, 46, 0.05);
 }
 
-.course-option label {
-  cursor: pointer;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
+.course-option.selected {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, #ecfbf7, #f2fffd);
+  box-shadow: 0 8px 20px rgba(15, 118, 110, 0.2);
 }
 
 .info {
@@ -186,6 +184,16 @@ body {
   display: flex;
   flex-direction: column;
   gap: 10px;
+}
+
+.course-output {
+  margin-top: 4px;
+}
+
+.course-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
 }
 
 .course-card header {

@@ -93,14 +93,12 @@ function renderCourseList() {
     const course = COURSE_DATA[code];
     const wrapper = document.createElement("div");
     wrapper.className = "course-option";
-
-    const label = document.createElement("label");
-    const checkbox = document.createElement("input");
-    checkbox.type = "checkbox";
-    checkbox.value = code;
-    checkbox.checked = selectedCourses.has(code);
-    checkbox.addEventListener("change", (e) => {
-      handleCourseToggle(code, e.target.checked);
+    if (selectedCourses.has(code)) {
+      wrapper.classList.add("selected");
+    }
+    wrapper.addEventListener("click", () => {
+      const isSelected = selectedCourses.has(code);
+      handleCourseToggle(code, !isSelected);
     });
 
     const info = document.createElement("div");
@@ -114,20 +112,19 @@ function renderCourseList() {
 
     info.appendChild(title);
     info.appendChild(meta);
-    label.appendChild(checkbox);
-    label.appendChild(info);
-    wrapper.appendChild(label);
+    wrapper.appendChild(info);
     courseListEl.appendChild(wrapper);
   });
 }
 
-function handleCourseToggle(code, checked) {
-  if (checked) {
+function handleCourseToggle(code, shouldSelect) {
+  if (shouldSelect) {
     selectedCourses.add(code);
   } else {
     selectedCourses.delete(code);
   }
   renderCourseSections();
+  renderCourseList();
   setSummaryPlaceholder();
 }
 
@@ -204,6 +201,35 @@ function renderCourseSections() {
 
     card.appendChild(assignmentsEl);
     card.appendChild(goalRow);
+
+    const output = document.createElement("div");
+    output.className = "course-output";
+    output.setAttribute("data-course-output", code);
+    setCoursePlaceholder(code, output);
+    card.appendChild(output);
+
+    const courseActions = document.createElement("div");
+    courseActions.className = "course-actions";
+    const computeBtn = document.createElement("button");
+    computeBtn.type = "button";
+    computeBtn.className = "primary";
+    computeBtn.textContent = "Compute this course";
+    computeBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      computeGrades();
+    });
+    const resetBtn = document.createElement("button");
+    resetBtn.type = "button";
+    resetBtn.className = "ghost";
+    resetBtn.textContent = "Reset inputs";
+    resetBtn.addEventListener("click", (e) => {
+      e.preventDefault();
+      resetCourse(code);
+    });
+    courseActions.appendChild(computeBtn);
+    courseActions.appendChild(resetBtn);
+
+    card.appendChild(courseActions);
     coursesContainer.appendChild(card);
   });
 }
@@ -301,82 +327,89 @@ function calculateCourse(code) {
   };
 }
 
-function renderResults(results, hasInvalid) {
-  summaryEl.innerHTML = "";
+function renderCourseResult(res) {
+  const output = document.querySelector(
+    `[data-course-output="${res.code}"]`
+  );
+  if (!output) return;
 
-  if (hasInvalid) {
+  output.innerHTML = "";
+
+  if (res.invalid) {
     const warning = document.createElement("div");
     warning.className = "alert danger";
     warning.textContent =
       "Fix the highlighted inputs (0-100 or fraction like 18/20).";
-    summaryEl.appendChild(warning);
-  }
-
-  if (!results.length) {
-    setSummaryPlaceholder();
+    output.appendChild(warning);
     return;
   }
 
-  results.forEach((res) => {
-    const block = document.createElement("div");
-    block.className = "result";
+  if (res.totalWeightUsed === 0) {
+    const placeholder = document.createElement("p");
+    placeholder.className = "placeholder";
+    placeholder.textContent = "Enter scores for this course to see the grade.";
+    output.appendChild(placeholder);
+    return;
+  }
 
-    const header = document.createElement("header");
-    const title = document.createElement("div");
-    title.className = "course-code";
-    title.textContent = res.code;
-    const grade = document.createElement("div");
-    grade.className = "grade";
-    grade.textContent = `${res.normalized.toFixed(2)}%`;
-    header.appendChild(title);
-    header.appendChild(grade);
+  const block = document.createElement("div");
+  block.className = "result";
 
-    const meta = document.createElement("div");
-    meta.className = "meta";
-    meta.textContent = `Using ${res.totalWeightUsed.toFixed(
-      1
-    )}% of ${res.totalWeightAll}% weight; ${
-      res.missingWeight
-    }% still missing.`;
+  const header = document.createElement("header");
+  const title = document.createElement("div");
+  title.className = "course-code";
+  title.textContent = res.code;
+  const grade = document.createElement("div");
+  grade.className = "grade";
+  grade.textContent = `${res.normalized.toFixed(2)}%`;
+  header.appendChild(title);
+  header.appendChild(grade);
 
-    block.appendChild(header);
-    block.appendChild(meta);
+  const meta = document.createElement("div");
+  meta.className = "meta";
+  meta.textContent = `Using ${res.totalWeightUsed.toFixed(
+    1
+  )}% of ${res.totalWeightAll}% weight; ${
+    res.missingWeight
+  }% still missing.`;
 
-    if (res.goalInfo) {
-      const goalNote = document.createElement("div");
-      goalNote.className = "meta";
-      if (res.goalInfo.remaining > 0) {
-        const needed = res.goalInfo.neededAvg;
-        if (needed <= 0) {
-          goalNote.textContent = `You're already above the ${res.goalInfo.goal.toFixed(
-            1
-          )}% goal; any scores on the remaining ${res.goalInfo.remaining.toFixed(
-            1
-          )}% keep you on track.`;
-        } else if (needed > 100) {
-          goalNote.textContent = `To reach ${res.goalInfo.goal.toFixed(
-            1
-          )}%, you would need higher than 100% on the remaining ${res.goalInfo.remaining.toFixed(
-            1
-          )}% weight, which is not feasible.`;
-        } else {
-          goalNote.textContent = `To reach ${res.goalInfo.goal.toFixed(
-            1
-          )}%, you need an average of ${needed.toFixed(
-            2
-          )}% across the remaining ${res.goalInfo.remaining.toFixed(
-            1
-          )}% weight.`;
-        }
+  block.appendChild(header);
+  block.appendChild(meta);
+
+  if (res.goalInfo) {
+    const goalNote = document.createElement("div");
+    goalNote.className = "meta";
+    if (res.goalInfo.remaining > 0) {
+      const needed = res.goalInfo.neededAvg;
+      if (needed <= 0) {
+        goalNote.textContent = `You're already above the ${res.goalInfo.goal.toFixed(
+          1
+        )}% goal; any scores on the remaining ${res.goalInfo.remaining.toFixed(
+          1
+        )}% keep you on track.`;
+      } else if (needed > 100) {
+        goalNote.textContent = `To reach ${res.goalInfo.goal.toFixed(
+          1
+        )}%, you would need higher than 100% on the remaining ${res.goalInfo.remaining.toFixed(
+          1
+        )}% weight, which is not feasible.`;
       } else {
-        goalNote.textContent =
-          "Goal provided, but there is no remaining weight to adjust.";
+        goalNote.textContent = `To reach ${res.goalInfo.goal.toFixed(
+          1
+        )}%, you need an average of ${needed.toFixed(
+          2
+        )}% across the remaining ${res.goalInfo.remaining.toFixed(
+          1
+        )}% weight.`;
       }
-      block.appendChild(goalNote);
+    } else {
+      goalNote.textContent =
+        "Goal provided, but there is no remaining weight to adjust.";
     }
+    block.appendChild(goalNote);
+  }
 
-    summaryEl.appendChild(block);
-  });
+  output.appendChild(block);
 }
 
 function computeGrades() {
@@ -385,22 +418,40 @@ function computeGrades() {
     return;
   }
 
-  const results = [];
-  let hasInvalid = false;
-
+  summaryEl.innerHTML = "";
   selectedCourses.forEach((code) => {
     const res = calculateCourse(code);
     if (!res) return;
-    if (res.invalid) hasInvalid = true;
-    results.push(res);
+    renderCourseResult(res);
   });
-
-  renderResults(results, hasInvalid);
 }
 
 function setSummaryPlaceholder() {
   summaryEl.innerHTML =
-    '<p class="placeholder">Results will appear here after you compute.</p>';
+    '<p class="placeholder">Compute to see grades under each course.</p>';
+}
+
+function setCoursePlaceholder(code, elementOverride) {
+  const target =
+    elementOverride ||
+    document.querySelector(`[data-course-output="${code}"]`);
+  if (!target) return;
+  target.innerHTML =
+    '<p class="placeholder">Enter scores, then compute to see this course grade.</p>';
+}
+
+function resetCourse(code) {
+  const card = document.querySelector(`[data-course-card="${code}"]`);
+  if (!card) return;
+
+  card
+    .querySelectorAll(`input[data-course="${code}"], input[data-goal="${code}"]`)
+    .forEach((input) => {
+      input.value = "";
+      input.classList.remove("error");
+    });
+
+  setCoursePlaceholder(code);
 }
 
 function resetInputs() {
@@ -410,29 +461,22 @@ function resetInputs() {
       input.value = "";
       input.classList.remove("error");
     });
+  selectedCourses.forEach((code) => setCoursePlaceholder(code));
   setSummaryPlaceholder();
 }
 
 function selectAllCourses() {
   selectedCourses = new Set(COURSE_ORDER);
-  syncCourseCheckboxes();
+  renderCourseList();
   renderCourseSections();
   setSummaryPlaceholder();
 }
 
 function clearCourses() {
   selectedCourses = new Set();
-  syncCourseCheckboxes();
+  renderCourseList();
   renderCourseSections();
   setSummaryPlaceholder();
-}
-
-function syncCourseCheckboxes() {
-  document
-    .querySelectorAll('#course-list input[type="checkbox"]')
-    .forEach((input) => {
-      input.checked = selectedCourses.has(input.value);
-    });
 }
 
 function init() {
