@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Weighted Grade Calculator</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="page">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Grade planner</p>
+        <h1>Weighted Grade Calculator</h1>
+        <p class="lede">
+          Enter your scores by assignment, calculate weighted grades, and see the average needed on what is left.
+        </p>
+        <div class="tags">
+          <span class="pill">Enter in fraction (ex. 18/20) or number (ex. 90)</span>
+          <span class="pill">Leave blank if missing/unknown</span>
+        </div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="panel controls">
+        <div class="panel-head">
+          <h2>Courses</h2>
+          <div class="actions">
+            <button type="button" id="select-all">Select all</button>
+            <button type="button" id="clear-all" class="ghost">Clear</button>
+          </div>
+        </div>
+        <p class="hint">Choose which courses to include; assignments will appear on the right.</p>
+        <div id="course-list" class="stack"></div>
+        <div class="callout">
+          <strong>Input tips:</strong> use fractions or numbers (don't need to type %). Leave empty or type <code>none</code> for missing grades.
+        </div>
+      </section>
+
+      <section class="panel workspace">
+        <div id="courses-container" class="courses"></div>
+        <div class="toolbar">
+          <button id="compute" class="primary">Compute grades</button>
+          <button id="reset" class="ghost">Reset inputs</button>
+        </div>
+        <div id="summary" class="summary"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
