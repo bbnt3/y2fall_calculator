@@ -460,6 +460,18 @@ button:hover {
   color: var(--accent);
 }
 
+.footer {
+  margin-top: 10px;
+  color: var(--muted);
+  text-align: center;
+}
+
+.footer__credit {
+  margin: 0;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+}
+
 @media (max-width: 960px) {
   .layout {
     grid-template-columns: 1fr;
