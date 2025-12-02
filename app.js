@@ -25,7 +25,7 @@ const COURSE_DATA = {
   ECE253: {
     code: "ECE253",
     assignments: [
-      { name: "Labs (Best 5 of 9, 4% each)", weight: 20 },
+      { name: "Labs (Best 5 of 9)", weight: 20 },
       { name: "Midterm", weight: 30 },
       { name: "Exam", weight: 50 },
     ],
@@ -35,7 +35,7 @@ const COURSE_DATA = {
     assignments: [
       { name: "ANT", weight: 15 },
       { name: "Seminar Participation", weight: 20 },
-      { name: "Quizzes (Best 7 of 9, 1.43% eachtotal)", weight: 10 },
+      { name: "Quizzes (Best 7 of 9)", weight: 10 },
       { name: "Midterm", weight: 20 },
       { name: "Exam", weight: 35 },
     ],
@@ -43,7 +43,7 @@ const COURSE_DATA = {
   MAT292: {
     code: "MAT292",
     assignments: [
-      { name: "Quizzes (Best 7 of 9, 1.43% each)", weight: 10 },
+      { name: "Quizzes (Best 7 of 9)", weight: 10 },
       { name: "Midterm", weight: 20 },
       { name: "Project - Proposal", weight: 5 },
       { name: "Project - Check-ins", weight: 5 },
@@ -56,7 +56,8 @@ const COURSE_DATA = {
     code: "PHY293",
     assignments: [
       { name: "Tutorial Quizzes", weight: 8 },
-      { name: "Post Class Quizzes", weight: 2 },
+      { name: "Post Class Quizzes (Best 28 of 32)", weight: 2 },
+      { name: "Mathmatize (Bonus, 14 out of 18 points)", weight: 1 },
       { name: "Midterm 1", weight: 15 },
       { name: "Midterm 2", weight: 15 },
       { name: "Resistance Lab", weight: 5 },
@@ -76,7 +77,23 @@ const COURSE_ORDER = [
   "PHY293",
 ];
 
-let selectedCourses = new Set(COURSE_ORDER);
+const GPA_SCALE = [
+  { min: 90, max: 100, gpa: 4.0, letter: "A+" },
+  { min: 85, max: 89, gpa: 4.0, letter: "A" },
+  { min: 80, max: 84, gpa: 3.7, letter: "A-" },
+  { min: 77, max: 79, gpa: 3.3, letter: "B+" },
+  { min: 73, max: 76, gpa: 3.0, letter: "B" },
+  { min: 70, max: 72, gpa: 2.7, letter: "B-" },
+  { min: 67, max: 69, gpa: 2.3, letter: "C+" },
+  { min: 63, max: 66, gpa: 2.0, letter: "C" },
+  { min: 60, max: 62, gpa: 1.7, letter: "C-" },
+  { min: 57, max: 59, gpa: 1.3, letter: "D+" },
+  { min: 53, max: 56, gpa: 1.0, letter: "D" },
+  { min: 50, max: 52, gpa: 0.7, letter: "D-" },
+  { min: 0, max: 49, gpa: 0.0, letter: "F" },
+];
+
+let selectedCourses = new Set();
 
 const courseListEl = document.getElementById("course-list");
 const coursesContainer = document.getElementById("courses-container");
@@ -129,6 +146,8 @@ function handleCourseToggle(code, shouldSelect) {
 }
 
 function renderCourseSections() {
+  const savedInputs = captureCourseInputs();
+  const savedOutputs = captureCourseOutputs();
   coursesContainer.innerHTML = "";
 
   if (!selectedCourses.size) {
@@ -202,10 +221,18 @@ function renderCourseSections() {
     card.appendChild(assignmentsEl);
     card.appendChild(goalRow);
 
+    if (savedInputs[code]) {
+      restoreCourseInputs(card, savedInputs[code]);
+    }
+
     const output = document.createElement("div");
     output.className = "course-output";
     output.setAttribute("data-course-output", code);
-    setCoursePlaceholder(code, output);
+    if (savedOutputs[code]) {
+      output.innerHTML = savedOutputs[code];
+    } else {
+      setCoursePlaceholder(code, output);
+    }
     card.appendChild(output);
 
     const courseActions = document.createElement("div");
@@ -221,7 +248,7 @@ function renderCourseSections() {
     const resetBtn = document.createElement("button");
     resetBtn.type = "button";
     resetBtn.className = "ghost";
-    resetBtn.textContent = "Reset inputs";
+    resetBtn.textContent = "Reset";
     resetBtn.addEventListener("click", (e) => {
       e.preventDefault();
       resetCourse(code);
@@ -327,6 +354,11 @@ function calculateCourse(code) {
   };
 }
 
+function convertPercentToGPA(percent) {
+  const match = GPA_SCALE.find((range) => percent >= range.min && percent <= range.max);
+  return match || null;
+}
+
 function renderCourseResult(res) {
   const output = document.querySelector(
     `[data-course-output="${res.code}"]`
@@ -376,6 +408,29 @@ function renderCourseResult(res) {
   block.appendChild(header);
   block.appendChild(meta);
 
+  const gpaInfo = convertPercentToGPA(res.normalized);
+  const gpaLine = document.createElement("div");
+  gpaLine.className = "gpa-display";
+
+  const gpaLabel = document.createElement("span");
+  gpaLabel.className = "gpa-label";
+  gpaLabel.textContent = "GPA";
+
+  const gpaValue = document.createElement("span");
+  gpaValue.className = "gpa-value";
+  gpaValue.textContent = gpaInfo ? gpaInfo.gpa.toFixed(1) : "n/a";
+
+  const gpaLetter = document.createElement("span");
+  gpaLetter.className = "gpa-letter";
+  gpaLetter.textContent = gpaInfo ? gpaInfo.letter : "";
+
+  gpaLine.appendChild(gpaLabel);
+  gpaLine.appendChild(gpaValue);
+  if (gpaInfo) {
+    gpaLine.appendChild(gpaLetter);
+  }
+  block.appendChild(gpaLine);
+
   if (res.goalInfo) {
     const goalNote = document.createElement("div");
     goalNote.className = "meta";
@@ -390,9 +445,11 @@ function renderCourseResult(res) {
       } else if (needed > 100) {
         goalNote.textContent = `To reach ${res.goalInfo.goal.toFixed(
           1
-        )}%, you would need higher than 100% on the remaining ${res.goalInfo.remaining.toFixed(
+        )}%, you would need ${needed.toFixed(
+          2
+        )}% on the remaining ${res.goalInfo.remaining.toFixed(
           1
-        )}% weight, which is not feasible.`;
+        )}% weight, ggs.`;
       } else {
         goalNote.textContent = `To reach ${res.goalInfo.goal.toFixed(
           1
@@ -454,15 +511,51 @@ function resetCourse(code) {
   setCoursePlaceholder(code);
 }
 
-function resetInputs() {
+function captureCourseInputs() {
+  const data = {};
   document
-    .querySelectorAll("#courses-container input")
-    .forEach((input) => {
-      input.value = "";
-      input.classList.remove("error");
+    .querySelectorAll("[data-course-card]")
+    .forEach((card) => {
+      const code = card.dataset.courseCard;
+      const assignments = {};
+      card
+        .querySelectorAll(
+          `input[data-course="${code}"][data-assignment]`
+        )
+        .forEach((input) => {
+          assignments[input.dataset.assignment] = input.value;
+        });
+      const goalInput = card.querySelector(`input[data-goal="${code}"]`);
+      data[code] = {
+        assignments,
+        goal: goalInput ? goalInput.value : "",
+      };
     });
-  selectedCourses.forEach((code) => setCoursePlaceholder(code));
-  setSummaryPlaceholder();
+  return data;
+}
+
+function captureCourseOutputs() {
+  const data = {};
+  document.querySelectorAll("[data-course-output]").forEach((el) => {
+    const code = el.dataset.courseOutput;
+    data[code] = el.innerHTML;
+  });
+  return data;
+}
+
+function restoreCourseInputs(card, saved) {
+  const code = card.dataset.courseCard;
+  if (!saved) return;
+  Object.entries(saved.assignments || {}).forEach(([assignment, value]) => {
+    const input = card.querySelector(
+      `input[data-course="${code}"][data-assignment="${assignment}"]`
+    );
+    if (input) input.value = value;
+  });
+  if (saved.goal !== undefined) {
+    const goalInput = card.querySelector(`input[data-goal="${code}"]`);
+    if (goalInput) goalInput.value = saved.goal;
+  }
 }
 
 function selectAllCourses() {
@@ -484,16 +577,6 @@ function init() {
   renderCourseSections();
   setSummaryPlaceholder();
 
-  document
-    .getElementById("compute")
-    .addEventListener("click", (e) => {
-      e.preventDefault();
-      computeGrades();
-    });
-  document.getElementById("reset").addEventListener("click", (e) => {
-    e.preventDefault();
-    resetInputs();
-  });
   document.getElementById("select-all").addEventListener("click", (e) => {
     e.preventDefault();
     selectAllCourses();
